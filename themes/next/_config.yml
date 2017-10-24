@@ -49,7 +49,7 @@ menu:
   about: /about/
   archives: /archives/
   tags: /tags/
-  sitemap: /sitemap.xml
+  #sitemap: /sitemap.xml
   commonweal: /404.html
 
 
@@ -242,16 +242,16 @@ auto_excerpt:
 post_meta:
   item_text: true
   created_at: true
-  updated_at: false
+  updated_at: true
   categories: true
 
 # Post wordcount display settings
 # Dependencies: https://github.com/willin/hexo-wordcount
 post_wordcount:
   item_text: true
-  wordcount: true
+  wordcount: false
   min2read: false
-  separated_meta: true
+  separated_meta: false
 
 # Wechat Subscriber
 #wechat_subscriber:
