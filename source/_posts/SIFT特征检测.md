@@ -48,9 +48,26 @@ $$D(x,y,\sigma)=(g(x,y,k \sigma)-g(x,y,\sigma))*I(x,y)=L(x,y,k \sigma)-L(x,y,\si
 <img src="/img/检测极值点.png" width="300">
 描述极值点：$(x,y,\sigma)$二维图像坐标和尺度空间坐标
 
-## 精确定位极值点
+## 精确定位特征点
 
-$D(x,y,\sigma)$表示高斯差分尺度空间的值，设$X=\begin{bmatrix} x&y& \sigma \end{bmatrix} ^T$
+### 精确定位极值点
+
+$D(x,y,\sigma)$表示高斯差分尺度空间的值，设$X=\begin{bmatrix} x&y& \sigma \end{bmatrix} ^T$，从原点泰勒展开，取三项，得到$D(X)=D+\frac{\partial	D}{\partial X}+\frac{1}{2} X^T \frac{\partial^2 D}{\partial X^2}X$
+令D(X)的一阶导数为0，获取精确的极值点 $\hat{X}=-\frac{\partial D}{\partial X} (\frac{\partial^2 D}{\partial X^2})^{-1}$
+即为求解线性方程组(用差分近似偏导数，因此金字塔要再多两层以计算二阶差分)
+$$\begin{bmatrix} \frac{\partial^2 D}{\partial x^2}& \frac{\partial^2 D}{\partial xy}&\frac{\partial^2 D}{\partial x\sigma}\\ \frac{\partial^2 D}{\partial yx}&\frac{\partial^2 D}{\partial y^2}&\frac{\partial^2 D}{\partial y\sigma}\\ \frac{\partial^2 D}{\partial \sigma x}&\frac{\partial^2 D}{partial \sigma y}&\frac{\partial^2 D}{\partial \sigma^2}\\ \end{bmatrix} \begin{bmatrix} x\\y\\ \sigma \\ \end{bmatrix}=-\begin{bmatrix} \frac{\partial D}{\partial x}\\ \frac{\partial D}{\partial y}\\\frac{\partial D}{\partial \sigma}\\ \end{bmatrix}$$
+如果X在任何维度上大于0.5，表示极值点更接近另一个采样点，在该点重复计算
+
+### 去除不稳定的极值点
+
+不稳定的点就是对比度低的点，可能光线或其他外部条件改变后，就无法检测到该极值点，就转换为去除D(X)上值较小的极值点，将$\hat{X}$带入D(X)得到下式
+$$D(\hat{X})=D+\frac{1}{2} \frac{\partial D^T}{\partial X}\hat{X}$$
+若$|D(\hat{X})|\geq 0.03$，则保留该点，否则去除
+
+### 去除边缘响应过大的极值点
+
+在SIFT中，DOG算子近似拉普拉斯算子，对边缘都有很强的检测效果，那当然需要从这些特征点中删除哪些是具有强边缘效应的点，以保证SIFT特征的旋转不变性。
+
 
 
 参考文献：http://blog.csdn.net/tanxinwhu/article/details/7048370
