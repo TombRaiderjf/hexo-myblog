@@ -84,3 +84,11 @@ sitemap:
   path: sitemap.xml  
 baidusitemap:  
   path: baidusitemap.xml  
+
+# title
+links_title: Links
+# links
+links:
+  INankai: http://inankai.nankai.edu.cn/new/index.html
+  Nankai: http://www.nankai.edu.cn/
+  TED: https://www.ted.com/
