@@ -79,11 +79,7 @@ deploy:
 
 baidu_analytics: aed6e9ff45536af820ce4cd1543c6bf4
 
-
-sitemap:  
-  path: sitemap.xml  
-baidusitemap:  
-  path: baidusitemap.xml  
+ 
 
 # title
 links_title: Links

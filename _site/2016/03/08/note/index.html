@@ -1,0 +1,43 @@
+<p><em>原创文章，转载请留言，注明出处</em></p>
+
+<p>在第一篇笔记中提到了imfilter()，这个函数有可选参数，一种是相关(correlation)，另一种是卷积(convolution)。在网上查阅资料，也大多没有比较清楚的将二者说明的，因此单独开一篇对书中介绍的卷积和相关理论这一小节做一个整理。</p>
+
+<h2 id="section">卷积</h2>
+
+<p>图像处理中，计算卷积用求和来代替积分运算，在MATLAB中函数conv2(a,b)专门用来计算二维离散卷积。计算公式如下：</p>
+
+<p><img src="http://i.imgur.com/TESdESr.png" alt="" /></p>
+
+<p>公式的含义是，将b矩阵旋转180°，从a(1,1)开始，将旋转后的b(3,3)覆盖到a(1,1)上，重合部分的元素相乘再求和，即得到a(1,1)的卷积值，a其他位置的卷积方式同理。下面定义大小为M*N的两个函数f(x,y)&amp;h(x,y)的离散卷积表示为：</p>
+
+<p><img src="http://i.imgur.com/VyY6Nl4.png" alt="" /></p>
+
+<p>卷积理论由两个函数和它们的傅里叶变换间的下述关系组成：</p>
+
+<p><img src="http://i.imgur.com/WuGNkBF.png" alt="" /></p>
+
+<h2 id="section-1">相关</h2>
+
+<p>两个函数f(x,y)&amp;h(x,y)相关性的定义如下：</p>
+
+<p><img src="http://i.imgur.com/jOINQ6x.png" alt="" /></p>
+
+<p>其中f*表示f的复共轭，由于一般处理的图像都是实函数，因此二者相等。与上一节卷积的公式相比，除了复共轭及求和式第二项的负号变成正号外，相关函数与卷积函数的形式相同。负号变为正号意味着h并不是关于原点的镜像，但是求和的过程的一致性意味着实现相关的每一步都和卷积相同，包括需要延拓。</p>
+
+<p>卷积是空间域过滤和频域过滤的纽带，相关的重要用途是匹配。f(x,y)一幅包含很多物体的图像，h(x,y)是匹配模板，匹配是在f(x,y)中找到与模板相同的区域的位置，匹配时，两个函数的相关值在该位置达到最大。这里的相关指的都是互相关，而不是自相关。</p>
+
+<p>MATLAB中提供了求函数相关的函数xcorr2(A,B),若矩阵A的维数是m-n，若矩阵B的维数是p-q，相关处理后的矩阵C的维数是 (m+p-1)-(n+q-1).</p>
+
+<p>下面的函数可以计算图像的一部分在图像中匹配的位置（二值图像）</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>function [ output ] = Match_img( img, find1 )	%在图像img中找到与find1矩阵最匹配的位置
+temp = xcorr2(img,find1);
+m = max(temp(:));
+[r,c] = find(temp==m);
+t = r(1)-size(find1,1)+1;
+p = c(1)-size(find1,2)+1;
+output = [t p];
+end
+</code></pre>
+</div>
+

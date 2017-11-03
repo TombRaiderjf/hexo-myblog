@@ -1,0 +1,52 @@
+<p><em>原创文章，转载请留言，注明出处</em></p>
+
+<h1 id="section">原理</h1>
+
+<p>首先简要介绍一下什么是霍夫变换，以及它可以实现什么。霍夫变换最早用于提取图像中的直线，后来经过不断的改进，已经可以用来提取圆，正方形等简单的线条或形状。下面的介绍主要根据MATLAB提供的帮助文档，从原理到函数。</p>
+
+<p>既然要找到图像中的直线，就需要用某种方式来表示每一条直线，霍夫变换将二维空间中所有的直线映射到以theta&amp;rho为坐标轴的二维空间中，theta代表原点到直线的垂线与x轴所成夹角，rho表示原点到直线距离的二倍，由于图像是离散的二维函数，因此只需将theta分为360等份，rho从0递增（+1），近似地表示每一条直线，为了对直线上的点计数，用二维矩阵存储每一组theta和rho的直线上的像素点的数目。如何判断离散的像素点是否在直线上呢？对每一个非背景像素点，只需对每一个theta，计算对应的rho，计算公式如下：<img src="http://i.imgur.com/A3LxtMu.png" alt="" />
+然后将矩阵中对应该theta和rho的位置加1，表示此点在这条直线上。对所有非背景像素点都做上述处理。</p>
+
+<p>下图是一个像素点映射到 theta&amp;rho 空间的示意图</p>
+
+<p><img src="http://i.imgur.com/l3JOTJi.png" alt="" /></p>
+
+<p>这样，我们便能够得到每条直线上的像素点的数目，毋庸置疑，像素点数目越多的直线，更有可能在图像中是一条直线边界。</p>
+
+<h1 id="hough-transform--matlab-">Hough Transform -MATLAB 实现</h1>
+
+<h2 id="section-1">霍夫变换</h2>
+<p>MATLAB提供了进行霍夫变换的函数：</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>[H,theta,rho] = hough(BW)
+[H,theta,rho] = hough(BW,Parametername,Parametervalue)
+</code></pre>
+</div>
+
+<p>BW必须为逻辑类型或数值型的二维实矩阵，hough函数有两组可选参数值对：当ParameterName 为’RhoResolution’时，ParameterValue 的值指定了rho轴的步长，也就是说rho越小，直线越密集，默认步长为1；当ParameterName 为’Theta’时，ParameterValue 表示theta的范围和步长，例如-80：0.5：85 表示theta从-80°到85°，步长为0.5°，默认值为-90：89.</p>
+
+<p>返回值theta为一个行向量，表示直线的theta值由小至大的所有取值，rho也是一个行向量，表示点到直线距离由小到大的所有取值，若theta尺寸为p，rho尺寸为q，返回值H是一个尺寸为 q*p 的二维矩阵，表示相应行的rho和相应列的theta唯一表示的直线上在图像上的像素的个数。</p>
+
+<h2 id="section-2">挑选峰值直线</h2>
+
+<p>接下来，需要挑选出符合要求的直线，MATLAB提供了找出矩阵H中峰值的函数：</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>peaks = houghpeaks(H,numpeaks)
+peaks = houghpeaks(H,numpeaks,param1,val1,param2,val2)
+</code></pre>
+</div>
+
+<p>numpeaks表示寻找峰值的最大数目，默认值为1；可选参数有两个，一是’Threshold’，参数值为可以被选为峰值的最小值，默认为0.5*max(H(:))，即 H 中最大值的一半，二是’NHoodSize’，参数值为一个矩阵[M N],当某条直线被选为峰值后，该直线在矩阵 H 中的位置的上下共M，左右共N的区间内全部置零，以防在该区域有多条峰值直线密集分布，默认值为size(H)/50.</p>
+
+<h2 id="section-3">显示直线</h2>
+
+<p>找到了峰值对应的直线，那么如何让这条直线在图片中显示出来，供我们检验是否得到了正确的结果呢？这里需要利用另外一个函数：</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>lines = houghlines(BW,theta,rho,peaks)
+lines = houghlines(BW,theta,rho,peaks,param1,val1,param2,val2)
+</code></pre>
+</div>
+
+<p>这里的BW，theta，rho，peaks都与前面的数据一致，函数返回一个结构体数组，大小为挑选出的可显示直线的数目（可显示是指如果两条线段在同一条直线上，它们算作不同的线）。结构体的成员变量有：point1，point2，theta，rho，分别代表线段首在二维图像中的坐标，线段尾的坐标，该线段在霍夫变换后对应的theta和rho。两个可选参数为：’FillGap’，表示同一直线上的点距离多远可以将其连成线段，默认值为20；’MinLength’，表示筛选的线段长度的最小值，默认为40.</p>
+
+<p>接下来就可以将得到的线段plot在原图中查看效果了。例子就不举了，MATLAB帮助文档里面搜索Hough Transform 就能看到一个详细的例子。</p>

@@ -1,0 +1,42 @@
+<p><em>原创文章，转载请注明出处并留言</em></p>
+
+<p><em>最近琐事太多，作业太多，一直没有继续阅读下去，我也是没办法0_0</em></p>
+
+<p>形态学的基础是集合的运算，交并补等等，比较简单。</p>
+
+<h1 id="section">膨胀与腐蚀</h1>
+
+<p>膨胀过程</p>
+
+<p><img src="http://i.imgur.com/IBpK4kC.png" alt="" /></p>
+
+<p>腐蚀过程</p>
+
+<p><img src="http://i.imgur.com/wylQzef.png" alt="" /></p>
+
+<p>开运算：先腐蚀后膨胀  开运算使图像的轮廓变得光滑，断开狭窄的间断，去掉细小的突出物</p>
+
+<p>闭运算：先膨胀后腐蚀  闭运算使图像的轮廓变得光滑，但与开运算不同的是，它会将狭窄的缺口连接形成细长的弯口，并填充比结构元素小的洞</p>
+
+<h2 id="section-1">应用</h2>
+
+<p><strong>边界提取</strong></p>
+
+<p>由结构元素B对集合A进行腐蚀，再用A减去腐蚀后的结果，最后得到的边界的宽度取决于B的尺寸，使用3*3的全一矩阵将得到1个像素宽的边界，而5方阵则得到2到3个像素宽的边界。
+<code class="highlighter-rouge">matlab	
+	function res = Border_Get( img, width )	%获取二值图像的边界，利用形态学方法
+	% img 为原二值图像矩阵，width为要获取的图像边界的宽度
+	temp = width*2 + 1;
+	element = strel('square',temp);
+	erode = imerode(img,element);
+	res = img - erode;
+	figure;
+	imshow(res);
+	end
+</code>
+取width=3，结果如下（原图无法上传，就是骨头部分全是白色）：</p>
+
+<p><img src="http://i.imgur.com/Pt0NDR1.png" alt="" /></p>
+
+<p><strong>区域填充</strong></p>
+

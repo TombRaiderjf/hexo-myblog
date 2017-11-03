@@ -1,0 +1,208 @@
+<p><em>原创文章，转载请留言，注明出处</em></p>
+
+<p>这学期正在修一门机器视觉的课，老师指定了一些参考书，我在图书馆找到了其中一本，便借来学习，到现在为止，已经自学完前三章。为了巩固习得的知识，我用MATLAB对其中一些重要的图像处理函数进行实现。</p>
+
+<h2 id="section">图像反转</h2>
+
+<p>对于灰度图像，将其每个像素点的灰度x变为255-x，有点像逻辑运算的取反。这种处理尤其适用于增强嵌入于图像暗色区域的白色或灰色细节，特别是当黑色面积占主导地位时。这个几乎算的上是白痴函数了，不过还是贴上，以免过后忘记。</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>function [ output_img ] = Reverse_img( input_img )		%图像反转
+
+output_img(:,:) = 255 - input_img(:,:);
+
+end ## 幂次变换
+</code></pre>
+</div>
+
+<p>幂函数表达式为：y=c*x^a ，对不同的a图像的形状不同（见下图 c=1）</p>
+
+<p><img src="http://i.imgur.com/2WSMqMY.jpg" alt="" /></p>
+
+<p>幂函数对图像进行变换可以将窄带暗值映射到宽带输出，也可以将宽带亮值映射到窄带输出，变换的具体类型和程度由a值决定。当 c=1 时，图像可以在0-255灰度之间直接转换，当c~=1 时，映射的结果应相对255做归一化处理。</p>
+
+<p>用于图像获取，打印和显示的各种装置根据幂次规律产生响应，也就是说这图像经过这些装置后变为了原来的幂次。这一转换中的幂指数叫做伽马值，用于修正幂次响应现象的过程称为<a href="http://blog.csdn.net/candycat1992/article/details/46228771">伽马校正</a>。例如，阴极射线管装置的电压-强度响应是一个指数变化为1.8-2.5的幂函数，导致图像暗带拉伸，所以需要对这一结果进行伽马校正，即进行s=y^(1/2.5)的变换（假设伽马值为2.5）</p>
+
+<p>代码很简单，如下：</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>function [ output_img ] = Power_img( input_img , Index )		%对图像进行幂次变换
+output_img = (input_img/255).^Index;
+end
+</code></pre>
+</div>
+
+<h2 id="section-1">直方图均衡化</h2>
+<p>通俗的说，直方图均衡化是将让灰度图像中的每一个灰度值在图像中以相同的概率出现，有效地用于图像增强。</p>
+
+<p>实现的过程并不复杂，首先计算图像中每一个灰度数值的像素数目，然后根据这一结果对每一个灰度数组计算出不大于它本身的像素数目，最后将上一步的结果全都除以图像的像素总数，即得到double类型的灰度，再将原图像的灰度变为它对应的double型灰度即为所求结果。</p>
+
+<p>代码如下：
+<code class="highlighter-rouge">matlab
+	function [ output_img ] = HisEqu_img( input_img )	%直方图均衡化
+	gray_rank=zeros(2,256);
+	x=size(input_img,1);
+	y=size(input_img,2);
+	for i=1:x
+    	for j=1:y
+        	gray_rank(1,input_img(i,j)+1)=gray_rank(1,input_img(i,j)+1)+1;
+    end
+	end
+	gray_rank(2,1)=gray_rank(1,1);
+	for i=2:256
+		gray_rank(2,i)=gray_rank(2,i-1)+gray_rank(1,i);
+	end
+	output_img=zeros(x,y);
+	gray_rank=double(gray_rank);
+	for i=1:x
+		for j=1:y
+        	output_img(i,j)=gray_rank(2,input_img(i,j)+1)/x/y;
+    end
+	end
+	end
+</code>
+<em>Note：2016-3-7</em></p>
+
+<p>MATLAB提供了直方图均衡化的函数 histeq(img)以及显示图像直方图的函数imhist(img),下面显示了MATLAB帮助文档中处理前后的图像，明显能够看出，均衡化后的轮胎很多细节得到了增强。</p>
+
+<p><img src="http://i.imgur.com/5FgrTj3.png" alt="" /></p>
+
+<h2 id="section-2">图像局部增强</h2>
+
+<p>以上讨论的都是对作为一个整体的图像进行增强的方法，但是如果想对含有一部分不清晰的细节进行局部增强，单纯的使用直方图均衡化可能难以达到要求。</p>
+
+<p>因此，下面介绍一种局部直方图增强的方法。</p>
+
+<p>设想，一个图像的某一部分灰度值过于集中，但是却有不可忽略的细节，那么如果想筛选出这部分子图像，考虑图像的均值和方差（为什么考虑均值？ 这里可以将待处理的部分分为黑背景，白细节和白背景，黑细节，第一节提到图像反转就可以将这两种情况归为一种，所以这里规定暗背景，浅细节）。若均值小，说明子图像可以作为增强的候选；若方差小（但大于某一阈值），说明子图像细节模糊，则确定应该对子图像进行增强，也就是上一节介绍的直方图均衡化。均值与方差的计算公式如下：</p>
+
+<p><img src="http://i.imgur.com/qCQKa1c.png" alt="" /></p>
+
+<p><img src="http://i.imgur.com/cvTIpVu.png" alt="" /></p>
+
+<p>s为一确定大小的邻域，g为(x,y)处图像的灰度，p(g)为灰度值对应的领域直方图均衡化的分量</p>
+
+<p>增强函数为：</p>
+
+<p><img src="http://i.imgur.com/VFOzPFC.png" alt="" /></p>
+
+<p>D为全局标准差，M为全局灰度均值，k，E为自定义参数</p>
+
+<div class="language-matlab highlighter-rouge"><pre class="highlight"><code>	<span class="k">function</span> <span class="p">[</span> <span class="n">output_img</span><span class="p">]</span> <span class="o">=</span> <span class="n">PartialImpro_img</span><span class="p">(</span><span class="n">input_img</span> <span class="p">)</span>	<span class="c1">%局部图像增强</span>
+	<span class="n">k0</span><span class="o">=</span><span class="mf">0.4</span><span class="p">;</span>
+	<span class="n">E</span><span class="o">=</span><span class="mi">4</span><span class="p">;</span>
+	<span class="n">k1</span><span class="o">=</span><span class="mf">0.02</span><span class="p">;</span>
+	<span class="n">k2</span><span class="o">=</span><span class="mf">0.4</span><span class="p">;</span>
+	<span class="n">output_img</span><span class="o">=</span><span class="n">input_img</span><span class="p">;</span>
+	<span class="n">x1</span><span class="o">=</span><span class="nb">size</span><span class="p">(</span><span class="n">input_img</span><span class="p">,</span><span class="mi">1</span><span class="p">);</span>
+	<span class="n">y1</span><span class="o">=</span><span class="nb">size</span><span class="p">(</span><span class="n">input_img</span><span class="p">,</span><span class="mi">2</span><span class="p">);</span>
+	<span class="n">Mxy</span><span class="o">=</span><span class="nb">zeros</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span><span class="n">y1</span><span class="p">);</span>			<span class="c1">%邻域均值</span>
+	<span class="n">thegma</span><span class="o">=</span><span class="nb">zeros</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span><span class="n">y1</span><span class="p">);</span>		<span class="c1">%邻域方差</span>
+	<span class="n">near</span><span class="o">=</span><span class="nb">int32</span><span class="p">((</span><span class="n">x1</span><span class="o">+</span><span class="n">y1</span><span class="p">)/</span><span class="mi">200</span><span class="p">);</span>	<span class="c1">%邻域正方形半径</span>
+	<span class="n">aver_gray</span><span class="o">=</span><span class="nb">sum</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">input_img</span><span class="p">))/</span><span class="n">x1</span><span class="p">/</span><span class="n">y1</span><span class="p">;</span>	<span class="c1">%全局平均灰度</span>
+	<span class="n">Dg</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span>
+	<span class="k">for</span> <span class="nb">i</span><span class="o">=</span><span class="mi">1</span><span class="p">:</span><span class="n">x1</span>
+    <span class="k">for</span> <span class="nb">j</span><span class="o">=</span><span class="mi">1</span><span class="p">:</span><span class="n">y1</span>
+        <span class="n">Dg</span><span class="o">=</span><span class="n">Dg</span><span class="o">+</span><span class="p">(</span><span class="n">input_img</span><span class="p">(</span><span class="nb">i</span><span class="p">,</span><span class="nb">j</span><span class="p">)</span><span class="o">-</span><span class="n">aver_gray</span><span class="p">)</span><span class="o">^</span><span class="mi">2</span><span class="p">;</span>
+    <span class="k">end</span>
+	<span class="k">end</span> <span class="c1">%计算全局方差</span>
+	<span class="n">Dg</span><span class="o">=</span><span class="nb">sqrt</span><span class="p">(</span><span class="nb">double</span><span class="p">(</span><span class="n">Dg</span><span class="p">));</span>
+	<span class="n">temp1</span><span class="o">=</span><span class="nb">zeros</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">near</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="o">*</span><span class="n">near</span><span class="o">-</span><span class="mi">1</span><span class="p">);</span>
+	<span class="k">for</span> <span class="nb">i</span><span class="o">=</span><span class="n">near</span><span class="p">:</span><span class="mi">2</span><span class="o">*</span><span class="n">near</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">x1</span><span class="o">-</span><span class="n">near</span><span class="o">+</span><span class="mi">1</span>
+    	<span class="k">for</span> <span class="nb">j</span><span class="o">=</span><span class="n">near</span><span class="p">:</span><span class="mi">2</span><span class="o">*</span><span class="n">near</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">y1</span><span class="o">-</span><span class="n">near</span><span class="o">+</span><span class="mi">1</span>
+        	<span class="n">temp1</span><span class="o">=</span><span class="n">HisEqu_img</span><span class="p">(</span><span class="n">input_img</span><span class="p">(</span><span class="nb">i</span><span class="o">-</span><span class="n">near</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="nb">i</span><span class="o">+</span><span class="n">near</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="nb">j</span><span class="o">-</span><span class="n">near</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="nb">j</span><span class="o">+</span><span class="n">near</span><span class="o">-</span><span class="mi">1</span><span class="p">));</span>
+        	<span class="n">temp2</span><span class="o">=</span><span class="nb">double</span><span class="p">(</span><span class="n">temp1</span><span class="p">)</span><span class="o">.*</span><span class="nb">double</span><span class="p">(</span><span class="n">input_img</span><span class="p">(</span><span class="nb">i</span><span class="o">-</span><span class="n">near</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="nb">i</span><span class="o">+</span><span class="n">near</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="nb">j</span><span class="o">-</span><span class="n">near</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="nb">j</span><span class="o">+</span><span class="n">near</span><span class="o">-</span><span class="mi">1</span><span class="p">));</span>
+        	<span class="n">Mxy</span><span class="p">(</span><span class="nb">i</span><span class="p">,</span><span class="nb">j</span><span class="p">)</span><span class="o">=</span><span class="nb">sum</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">temp2</span><span class="p">));</span>
+        	<span class="k">for</span> <span class="n">k</span><span class="o">=</span><span class="nb">i</span><span class="o">-</span><span class="n">near</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="nb">i</span><span class="o">+</span><span class="n">near</span><span class="o">-</span><span class="mi">1</span>
+            	<span class="k">for</span> <span class="n">l</span><span class="o">=</span><span class="nb">j</span><span class="o">-</span><span class="n">near</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="nb">j</span><span class="o">+</span><span class="n">near</span><span class="o">-</span><span class="mi">1</span>
+                	<span class="n">thegma</span><span class="p">(</span><span class="nb">i</span><span class="p">,</span><span class="nb">j</span><span class="p">)</span><span class="o">=</span><span class="n">thegma</span><span class="p">(</span><span class="nb">i</span><span class="p">,</span><span class="nb">j</span><span class="p">)</span><span class="o">+</span><span class="p">(</span><span class="n">input_img</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="n">l</span><span class="p">)</span><span class="o">-</span><span class="n">Mxy</span><span class="p">(</span><span class="nb">i</span><span class="p">,</span><span class="nb">j</span><span class="p">))</span><span class="o">^</span><span class="mi">2</span><span class="o">*</span><span class="n">temp1</span><span class="p">(</span><span class="n">k</span><span class="o">-</span><span class="nb">i</span><span class="o">+</span><span class="n">near</span><span class="p">,</span><span class="n">l</span><span class="o">-</span><span class="nb">j</span><span class="o">+</span><span class="n">near</span><span class="p">);</span>
+            	<span class="k">end</span>
+        	<span class="k">end</span>
+        	<span class="k">if</span> <span class="n">Mxy</span><span class="p">(</span><span class="nb">i</span><span class="p">,</span><span class="nb">j</span><span class="p">)</span><span class="o">&lt;=</span><span class="n">aver_gray</span><span class="o">*</span><span class="n">k0</span> <span class="o">&amp;&amp;</span> <span class="nb">sqrt</span><span class="p">(</span><span class="n">thegma</span><span class="p">(</span><span class="nb">i</span><span class="p">,</span><span class="nb">j</span><span class="p">))</span><span class="o">&lt;=</span><span class="n">k2</span><span class="o">*</span><span class="n">Dg</span> <span class="o">&amp;&amp;</span> <span class="nb">sqrt</span><span class="p">(</span><span class="n">thegma</span><span class="p">(</span><span class="nb">i</span><span class="p">,</span><span class="nb">j</span><span class="p">))</span><span class="o">&gt;=</span><span class="n">k1</span><span class="o">*</span><span class="n">Dg</span>
+            	<span class="n">output_img</span><span class="o">=</span><span class="n">E</span><span class="o">*</span><span class="n">input_img</span><span class="p">(</span><span class="nb">i</span><span class="p">,</span><span class="nb">j</span><span class="p">);</span>
+        	<span class="k">end</span>
+    	<span class="k">end</span>
+	<span class="k">end</span>
+	<span class="k">end</span>
+</code></pre>
+</div>
+
+<h2 id="section-3">空间滤波</h2>
+
+<p>要想搞清楚滤波的原理，首先要从理解卷积开始。简而言之，卷积反映的是一个函数在另一个函数上移动时重叠部分的量。	在图像处理中，卷积用求和来代替积分，我们把这种对图像进行卷积的过程称为滤波，连续函数卷积的激励函数在图像处理中对应为‘掩模’，即3<em>3 或 5</em>5 之类的矩阵。对图像进行滤波的操作是，对整个图像进行遍历，每次将掩模矩阵与等大的像素矩阵对应元素相乘，将所得矩阵加和即得每个位置的灰度值。</p>
+
+<p>MATLAB提供了二维卷积的函数</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>p = conv2(A,B); % B为卷积矩阵，A为待卷积矩阵，注意数据类型必须为double或single
+</code></pre>
+</div>
+
+<h3 id="section-4">平滑空间滤波</h3>
+
+<p>平滑滤波器用于模糊处理和减小噪声，下面介绍其中两种滤波器。</p>
+
+<h4 id="section-5">平滑线性滤波器</h4>
+
+<p>顾名思义，平滑线性滤波器是对图像的每个像素点自身及周围灰度进行加权平均的过程，常见的掩模有：</p>
+
+<p>[1 1 1;1 1 1;1 1 1]/9</p>
+
+<p>[1 2 1;2 4 2;1 2 1]/16</p>
+
+<p>对于不同的图像可以自定义掩模，但是必须满足所有掩模的所有元素和为1。掩模的尺寸也可以各异，尺寸越大，处理后的图像越模糊。</p>
+
+<p>在图像预处理中，用于平滑和降噪的的高斯滤波是最常用的，MATLAB提供了fspecial()函数用于生成各种滤波掩模。</p>
+
+<div class="language-matlab highlighter-rouge"><pre class="highlight"><code>	<span class="n">h</span> <span class="o">=</span> <span class="n">fspecial</span><span class="p">(</span><span class="nb">type</span><span class="p">,</span> <span class="n">parameters</span><span class="p">);</span>   <span class="c1">% 通用函数</span>
+	<span class="n">h1</span> <span class="o">=</span> <span class="n">fspecial</span><span class="p">(</span><span class="s1">'guassian'</span><span class="p">,</span><span class="n">hsize</span><span class="p">,</span><span class="n">sigma</span><span class="p">);</span>  <span class="c1">%生成大小为hsize*hsize的高斯卷积核，标准差为sigma</span>
+	<span class="n">h2</span> <span class="o">=</span> <span class="n">fspecial</span><span class="p">(</span><span class="s1">'laplacian'</span><span class="p">,</span><span class="nb">alpha</span><span class="p">);</span>  <span class="c1">%拉普拉斯掩模，下面会提到</span>
+	<span class="n">h3</span> <span class="o">=</span> <span class="n">fspecial</span><span class="p">(</span><span class="s1">'average'</span><span class="p">,</span><span class="n">hsize</span><span class="p">);</span>  <span class="c1">%均值滤波</span>
+</code></pre>
+</div>
+<p>下图是MATLAB提供的所有掩模类型</p>
+
+<p><img src="http://i.imgur.com/opBMxZ3.png" alt="" /></p>
+
+<h4 id="section-6">统计排序滤波器</h4>
+
+<p>统计排序滤波器是一种非线性的滤波器，它不需要掩模，只根据图像滤波器包围的区域中像素的排序，然后用统计排序的结果决定的值代替中心像素的值。最常见的是中值滤波器，它采用统计排序得到的中值作为中心像素的值。中值滤波器对处理脉冲噪声（<a href="http://baike.baidu.com/link?url=FX4EhH3AI62djU6QcxBNiQwcpQaQOnY4TbEIpzmONZMpsKECj1iga_z3kKXv9sipjASu52Toauv7m-E5XPIRZa">椒盐噪声</a>）非常有效，处理随机噪声也比线性滤波器的模糊程度要低。</p>
+
+<h3 id="section-7">锐化空间滤波</h3>
+
+<p>锐化的目的是突出图像中的细节，同时对增强边缘有显著效果。下面介绍一种基于二阶微分算子的锐化空间滤波器。</p>
+
+<p>对于二元函数的拉普拉斯算子： <img src="http://i.imgur.com/3DI4QUz.png" alt="" />，我们需要的是拉普拉斯算子的离散变换，因此定义离散的二阶偏微分：<img src="http://i.imgur.com/mUWtSWk.png" alt="" /></p>
+
+<p><img src="http://i.imgur.com/bZ4nkkY.png" alt="" /></p>
+
+<p>得到  <img src="http://i.imgur.com/KlcLvcu.png" alt="" /></p>
+
+<p>这个公式可以用[0 -1 0;-1 4 -1;0 -1 0]掩模来实现，同时可以看出，它符合90°旋转的各向同性。也可以对它进行改进，添加对角线两个个方向的偏微分，把[-1 -1 -1;-1 8 -1;-1 -1 -1]作为掩模。</p>
+
+<p>由于拉普拉斯算子是一种微分算子，它强调了图像中灰度的突变同时降低灰度变换缓慢的区域，将通过拉普拉斯变换的掩模处理后的图像与原图像叠加就可以使得突变的位置得到强化。最终得到滤波器的掩模为[0 -1 0;-1 5 -1;0 -1 0] ，处理后图像的细节部分得到增强，并良好保留了图像的背景色调。</p>
+
+<p>实验表明，经过包含对角分量的掩模进行处理的结果一般要比上句所表示的掩模所得结果锐化程度更强。</p>
+
+<p>以上多种滤波方法都涉及到了掩模滤波，下面给出对给定掩模进行滤波的代码：</p>
+
+<div class="language-matlab highlighter-rouge"><pre class="highlight"><code>	<span class="k">function</span> <span class="p">[</span> <span class="n">output_img</span> <span class="p">]</span> <span class="o">=</span> <span class="n">Filter_img</span><span class="p">(</span> <span class="n">input_img</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">n</span> <span class="p">)</span>	<span class="c1">%对给定掩膜进行滤波 mask为掩模矩阵，n为矩阵维数</span>
+	<span class="n">output_img</span><span class="o">=</span><span class="n">input_img</span><span class="p">;</span>
+	<span class="n">t</span><span class="o">=</span><span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">)/</span><span class="mi">2</span><span class="p">;</span>
+	<span class="n">p</span><span class="o">=</span><span class="nb">sum</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">mask</span><span class="p">));</span>
+	<span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">/</span><span class="n">p</span><span class="p">;</span>
+	<span class="k">for</span> <span class="nb">i</span><span class="o">=</span><span class="mi">2</span><span class="p">:</span><span class="nb">size</span><span class="p">(</span><span class="n">input_img</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span>
+    	<span class="k">for</span> <span class="nb">j</span><span class="o">=</span><span class="mi">2</span><span class="p">:</span><span class="nb">size</span><span class="p">(</span><span class="n">input_img</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span>
+        	<span class="n">temp</span><span class="o">=</span><span class="n">mask</span><span class="o">.*</span><span class="nb">double</span><span class="p">(</span><span class="n">input_img</span><span class="p">(</span><span class="nb">i</span><span class="o">-</span><span class="n">t</span><span class="p">:</span><span class="nb">i</span><span class="o">+</span><span class="n">t</span><span class="p">,</span><span class="nb">j</span><span class="o">-</span><span class="n">t</span><span class="p">:</span><span class="nb">j</span><span class="o">+</span><span class="n">t</span><span class="p">));</span>
+        	<span class="n">output_img</span><span class="p">(</span><span class="nb">i</span><span class="p">,</span><span class="nb">j</span><span class="p">)</span><span class="o">=</span><span class="nb">sum</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">temp</span><span class="p">));</span>
+    	<span class="k">end</span>
+	<span class="k">end</span>
+	<span class="k">end</span>
+</code></pre>
+</div>
+
+<p>然而，MATLAB已经提供了滤波的函数</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>B = imfilter(A,h,options...)   %  A表示原图像，h代表滤波掩模	
+</code></pre>
+</div>
+
+<p>这里的options是可选参数，包括对边界处理方式的选择，滤波后图像的尺寸，以及相关（correlation)和卷积（convolution）的选择。边界处理option有：X表示增加的边界像素值（默认为0），’symmetric’ 表示边界部分补充的像素是对原图进行镜像处理得到的， ‘replicate’表示边界重复原图边界的像素， ‘circular’表示将原图紧贴着平铺得到的边界。滤波后图像尺寸option分为’same’显示的图像与原图等大，’full’表示滤波得到的实际结果，要比原图像大。imfilter默认选择correlation,因此若要使用卷积滤波，需要显示添加参数’conv’.</p>
+
+<p>未完待续~~~</p>
