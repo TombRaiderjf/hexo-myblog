@@ -26,13 +26,18 @@ function change()
 	{
 		
 	}
-	for(var i=0;i<keywords.length;i++)
+	for(var i=0;i<keywords.length-1;i++)
+	{
 		keywords[i]=keywords[i].replace(/\+/g, "");
+		new_url+=keywords[i]+"%2C";
+	}
+	
+	new_url+=keywords.[keywords.length-1].replace(/\+/g, "");
 	var start_year=document.getElementById('start_year').value;
 	var end_year=document.getElementById('end_year').value;
 	var options=$("#smoothing option:selected");//获取当前选择项.
 	var smoothing=options.text();//获取当前选择项的文本.
 	new_url+="&year_start="+start_year+"&year_end="+end_year+"&corpus=15&smoothing="+smoothing";
-	document.getElementById("mchart").src="https://books.google.com/ngrams/interactive_chart?content=Albert+Einstein%2CSherlock+Holmes&year_start=1800&year_end=2000&corpus=15&smoothing=3&share=&direct_url=t1%3B%2CAlbert%20Einstein%3B%2Cc0%3B.t1%3B%2CSherlock%20Holmes%3B%2Cc0";
+	document.getElementById("mchart").src=new_url;
  
 }
