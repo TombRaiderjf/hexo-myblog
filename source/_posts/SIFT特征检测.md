@@ -52,7 +52,7 @@ $$D(x,y,\sigma)=(g(x,y,k \sigma)-g(x,y,\sigma))*I(x,y)=L(x,y,k \sigma)-L(x,y,\si
 
 ### 精确定位极值点
 
-$D(x,y,\sigma)$表示高斯差分尺度空间的值，设$X=\begin{bmatrix} x&y& \sigma \end{bmatrix} ^T$，从原点泰勒展开，取三项，得到$D(X)=D+\frac{\partial	D}{\partial X}+\frac{1}{2} X^T \frac{\partial^2 D}{\partial X^2}X$
+$D(x,y,\sigma)$表示高斯差分尺度空间的值，设$X=\begin{bmatrix} x&y& \sigma \end{bmatrix} ^T$，从原点泰勒展开，取三项，得到$D(X)=D+\frac{\partial	D}{\partial X} X+\frac{1}{2} X^T \frac{\partial^2 D}{\partial X^2}X$
 令D(X)的一阶导数为0，获取精确的极值点 $\hat{X}=-\frac{\partial D}{\partial X} (\frac{\partial^2 D}{\partial X^2})^{-1}$
 即为求解线性方程组(用差分近似偏导数，因此金字塔要再多两层以计算二阶差分)
 $$\begin{bmatrix} \frac{\partial^2 D}{\partial x^2}& \frac{\partial^2 D}{\partial xy}&\frac{\partial^2 D}{\partial x\sigma}\\ \frac{\partial^2 D}{\partial yx}&\frac{\partial^2 D}{\partial y^2}&\frac{\partial^2 D}{\partial y\sigma}\\ \frac{\partial^2 D}{\partial \sigma x}&\frac{\partial^2 D}{partial \sigma y}&\frac{\partial^2 D}{\partial \sigma^2}\\ \end{bmatrix} \begin{bmatrix} x\\y\\ \sigma \\ \end{bmatrix}=-\begin{bmatrix} \frac{\partial D}{\partial x}\\ \frac{\partial D}{\partial y}\\\frac{\partial D}{\partial \sigma}\\ \end{bmatrix}$$
