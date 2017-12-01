@@ -82,10 +82,11 @@ baidu_analytics: aed6e9ff45536af820ce4cd1543c6bf4
  
 
 # title
-links_title: Links
+links_title: 友情链接
 # links
 links:
   INankai: http://inankai.nankai.edu.cn/new/index.html
   Nankai: http://www.nankai.edu.cn/
   TED: https://www.ted.com/
   随忘淡思: https://www.lushaojun.com/
+  AlTuring: http://blog.aituring.xyz/
