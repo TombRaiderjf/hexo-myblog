@@ -54,7 +54,7 @@ views中的每个子集都代表存储图像信息，包括文件名，图像尺
 
 sfm_data.json文件格式
 	
-```
+```javascript
 {
     "sfm_data_version": "0.3",
     "root_path": "/home/jf/openMVG_Build/software/SfM/ImageDataset_SceauxCastle/images",
@@ -146,8 +146,24 @@ sfm_data.json文件格式
 
 （题外话）*前天在github上comment openMVG文档的小错误，今天早上居然收到了邮件回复（一位叫Pierre Moulon的开发人员），我也明白了他的原意，不过在指出了ambiguous之处后，他把相关的几处都改了*
 
+---
+
+**1月4日更新：**
+
+图像集仍是例程克隆下来的Castle的11张照片
+耗时：
+-	特征提取 14seconds
+-	特征匹配 4seconds
+-	点云重建 86seconds，共240,000左右个点
+
+为了检测普适性，我用手机（iPhone SE）拍了五张宿舍一角的照片，分辨率为4K，结果尝试多次都出Invalid data的错误，后来查看文档发现*The chain will only consider images with known approximate focal length. Image with invalid intrinsic id will be ignored.* 又去找sensor_width_camera_database.txt，结果里面根本木有SE的参数（mmp）。
+
+其实最主要的参数是focal length in pixel，畸变系数之类的直接可以忽略掉，然而就这一个参数EXIF里都没有，如果手动算的话还要已知CCD width，公式：focal length in pixels = (image width in pixels) x (focal length in mm) / (CCD width in mm)。最后无奈只得切回windows下了个修改EXIF 的软件，把型号改成iPhone 6s Plus，美滋滋。
+
+
+
 参考:
 [1] openMVG-SfM文档 [http://openmvg.readthedocs.io/en/latest/software/SfM/SfM/](http://openmvg.readthedocs.io/en/latest/software/SfM/SfM/ "openMVG-SfM文档")
-
+[2] EXIF在线解析地址 [https://exif.tuchong.com/](https://exif.tuchong.com/)
 
 
