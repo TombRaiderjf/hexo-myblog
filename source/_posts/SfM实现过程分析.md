@@ -160,6 +160,7 @@ sfm_data.json文件格式
 
 其实最主要的参数是focal length in pixel，畸变系数之类的直接可以忽略掉，然而就这一个参数EXIF里都没有，如果手动算的话还要已知CCD width，公式：focal length in pixels = (image width in pixels) x (focal length in mm) / (CCD width in mm)。最后无奈只得切回windows下了个修改EXIF 的软件，把型号改成iPhone 6s Plus，美滋滋。
 
+---
 
 
 参考:

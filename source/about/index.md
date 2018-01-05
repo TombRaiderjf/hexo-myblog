@@ -14,12 +14,12 @@ Future： 赚钱
 Ideal Job： 待定
 Tech： python C++ HTML MATLAB 
 
---------------------**最近好想一夜暴富啊**----------------------
+-------------------------**最近好想一夜暴富啊**-------------------------
 
 **欢迎收藏我的博客**
 
 <img src="/img/cqe.jpg">
 
-<img src="/img/nikki.jpg">
+<img src="/img/charlotte.jpg">
 
 <img src="/img/TR.jpeg">
