@@ -5,11 +5,28 @@
   {% set html_class = html_class + ' use-motion' %}
 {% endif %}
 
+
 <html class="{{ html_class | lower }}" lang="{{ config.language }}">
 <head>
   {% include '_partials/head.swig' %}
   <title>{% block title %}{% endblock %}</title>
   {% include '_third-party/analytics/index.swig' %}
+  <meta name="msvalidate.01" content="A1B604458B20AA620C885FEE2A30748F" />
+
+  
+  <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+
+<script>
+
+  (adsbygoogle = window.adsbygoogle || []).push({
+
+    google_ad_client: "ca-pub-5663118915128759",
+
+    enable_page_level_ads: true
+
+  });
+
+</script>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="{{ page.lang || page.language || config.language }}">

@@ -2,7 +2,7 @@
 title: SfM实现过程分析
 date: 2018-01-03 17:46:44
 tags: SfM
-categories: 机器视觉
+categories: 编程学习
 ---
 
 昨天立了flag，今天要学SfM过程，大概看了看SfM的各个文件目录，build&make出来的linux-release-x86大概叫这个名字的文件夹里面有很多可执行文件，直接根据文档里给的参数跑就可以，要搞源码的话实在是搞不起，太复杂，太庞大了。下面的代码是从他给出的easy to use的python脚本中截取的核心代码，注释的也很赞，清晰明确。

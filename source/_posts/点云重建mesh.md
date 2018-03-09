@@ -2,6 +2,7 @@
 title: 点云重建mesh
 date: 2018-01-04 20:51:35
 tags:
+categories: 编程学习
 ---
 
 点云重建mesh是个很头疼的过程，就meshlab中的方法说说.

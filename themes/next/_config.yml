@@ -45,9 +45,9 @@ index_with_subtitle: true
 # When running the site in a subdirectory (e.g. domain.tld/blog), remove the leading slash (/archives -> archives)
 menu:
   home: /
-  #categories: /categories/
+  categories: /categories/
   about: /about/
-  archives: /archives/
+  #archives: /archives/
   tags: /tags/
   guestbook: /guestbook
   #sitemap: /sitemap.xml
@@ -64,7 +64,7 @@ menu_icons:
   #KeyMapsToMenuItemKey: NameOfTheIconFromFontAwesome
   home: home
   about: user
-  categories: th
+  categories: archive
   schedule: calendar
   tags: tags
   archives: archive
@@ -251,7 +251,7 @@ post_meta:
 # Dependencies: https://github.com/willin/hexo-wordcount
 post_wordcount:
   item_text: true
-  wordcount: false
+  wordcount: true
   min2read: false
   separated_meta: false
 

@@ -2,6 +2,7 @@
 title: 利用openMVG和PMVS实现三维场景的点云重建
 date: 2018-01-02 16:59:54
 tags: 三维重建
+categories: 编程学习
 ---
 
 # openMVG与PMVS简介
@@ -89,14 +90,14 @@ SfM_Data是一个数据容器，储存在**sfm_data.bin**中，它包括（大�
 
 把SfM_Data转化为适用于PMVS输入格式的文件
 
-	$ openMVG_main_openMVG2PMVS -i tutorial_out/reconstruction_global/sfm_data.bin -o tutorial_out/ reconstruction_global
+	$ openMVG_main_openMVG2PMVS -i tutorial_out/reconstruction_global/sfm_data.bin -o tutorial_out/reconstruction_global
 
 （官方文档写错了，害的我蒙圈好久）
 在reconstruction_global文件夹中会生成PMVS文件夹
 包含 models, txt, visualize 三个文件夹，models为空，txt包含11个对应图像的txt文档，每个里面都是一个3x4的矩阵，大概是相机位姿，visualize包含11张图像，不确定是原图像还是校正过的图像。
 然后把CMPVS-PMVS编译后生成的pmvs2复制到SfM文件夹，运行
 
-	$ pmvs2 tutorial_out/ reconstruction_global /PMVS/ pmvs_options.txt
+	$ pmvs2 tutorial_out/reconstruction_global /PMVS/pmvs_options.txt
 
 PMVS/models文件夹中生成一个大小为15.2MB的pmvs_options.txt.ply点云文件，用meshlab打开即可看到重建出来的彩色稠密点云，还是很不错的效果。
 
