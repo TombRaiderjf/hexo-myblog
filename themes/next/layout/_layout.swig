@@ -98,7 +98,7 @@
   {% include '_third-party/scroll-cookie.swig' %}
   {% include '_third-party/exturl.swig' %}
   {% if theme.canvas_nest %}
-     <script type="text/javascript" opacity='0.7' count='20' src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+     <script type="text/javascript" opacity='0.9' count='6' src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
   {% endif %}
 </body>
 </html>
